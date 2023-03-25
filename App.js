@@ -12,7 +12,7 @@ import * as Location from "expo-location";
 import { Fontisto } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-console.log(SCREEN_WIDTH);
+
 const API_KEY = "784ab24ff2ed5d94d4288abed9e25d13";
 
 const icons = {
@@ -30,6 +30,7 @@ export default function App() {
   const [days, setDays] = useState([]);
   const [ok, setOk] = useState(true);
   const [today, setToday] = useState("");
+  const [datas, setDatas] = useState({});
 
   const getWeather = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
@@ -50,6 +51,9 @@ export default function App() {
 
     const json = await response.json();
     setDays(json.daily);
+    setDatas(json);
+    console.log("json", json);
+    console.log(json.length);
   };
 
   const formatDate = () => {
@@ -65,22 +69,34 @@ export default function App() {
     setToday(today);
   };
 
+  // const mphToMetersPerSecond = async () => {
+  //   if (datas) {
+  //     const kmPerHour = datas.current.wind_speed * 1.60934;
+  //     const metersPerSecond = kmPerHour / 3.6;
+
+  //     let newDatas = { ...datas };
+  //     newDatas.current.wind_speed = Number(metersPerSecond.toFixed(2));
+  //     setDatas({ ...datas, newDatas });
+  //   }
+  // };
+
   useEffect(() => {
     getWeather();
     formatDate();
+    // mphToMetersPerSecond();
   }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.city}>
-        <Text style={styles.cityName}>{city}</Text>
-        <Text>{today}</Text>
+      <View style={styles.topWrapper}>
+        <Text style={[styles.fs30, styles.fw600]}>{city}</Text>
+        <Text style={styles.fs15}>{today}</Text>
       </View>
       <View style={styles.hrline} />
 
       <ScrollView
         pagingEnabled
-        contentContainerStyle={styles.weather}
+        contentContainerStyle={styles.fs30}
         horizontal
         showsHorizontalScrollIndicator={false}
       >
@@ -92,24 +108,56 @@ export default function App() {
           days.map((day, index) => (
             <View key={index}>
               <View style={styles.middle}>
-                <Text style={styles.font100}>
-                  {parseFloat(day.temp.day).toFixed(1)}°
-                </Text>
                 <View style={styles.tempWrapper}>
                   <Fontisto
                     name={icons[day.weather[0].main][0]}
-                    size={30}
+                    size={25}
                     color="black"
                     paddingRight="5%"
                   />
-                  <Text style={styles.font20}>
+                  <Text style={styles.fs20}>
                     {icons[day.weather[0].main][1]}
                   </Text>
                 </View>
+                <Text style={styles.fs100}>
+                  {parseFloat(datas?.current?.temp).toFixed(1)}°
+                </Text>
               </View>
               <View style={styles.hrline} />
+
               <View>
-                <Text style={styles.font20}>123</Text>
+                {!datas ? (
+                  <View style={{ ...styles.middle, alignItems: "center" }}>
+                    <ActivityIndicator color={"black"} size="large" />
+                  </View>
+                ) : (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <View>
+                        <Text style={[styles.fs15, styles.fw600]}>
+                          습도 {datas?.current?.humidity}%
+                        </Text>
+                        <Text style={styles.fs15}>
+                          체감온도{" "}
+                          {parseFloat(datas?.current?.feels_like).toFixed(1)}°
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={[styles.fs15, styles.fw600]}>
+                          바람 {datas?.current?.wind_speed}m/s
+                        </Text>
+                        <Text style={styles.fs15}>
+                          {day.weather[0].description}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
               </View>
             </View>
           ))
@@ -126,16 +174,16 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 80,
   },
-  city: {
+  topWrapper: {
     flex: 0.2,
     justifyContent: "flex-end",
     alignItems: "left",
     paddingTop: 30,
   },
-  cityName: {
-    fontSize: 30,
-    fontWeight: "500",
-  },
+  // cityName: {
+  //   fontSize: 30,
+  //   fontWeight: "500",
+  // },
   weather: {},
   middle: {
     width: SCREEN_WIDTH - 60,
@@ -146,12 +194,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  font100: {
-    fontWeight: "700",
+  fs100: {
+    fontWeight: "600",
     fontSize: 120,
+    marginTop: -15,
   },
-  font20: {
-    fontSize: 18,
+  fs30: {
+    fontSize: 30,
+  },
+  fs20: {
+    fontSize: 20,
+  },
+  fs15: {
+    fontSize: 15,
+  },
+  fw600: {
+    fontWeight: 600,
   },
   hrline: {
     borderWidth: 0.8,
