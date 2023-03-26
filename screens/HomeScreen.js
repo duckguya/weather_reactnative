@@ -11,13 +11,8 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { Fontisto } from "@expo/vector-icons";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { NavigationContainer } from "@react-navigation/native";
-const Stack = createNativeStackNavigator();
-
+import { API_KEY } from "@env";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const API_KEY = "784ab24ff2ed5d94d4288abed9e25d13";
 
 const icons = {
   Clouds: ["cloudy", "흐림"],
