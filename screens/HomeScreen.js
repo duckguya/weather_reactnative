@@ -1,7 +1,5 @@
-// import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
   Dimensions,
   StyleSheet,
   Text,
@@ -9,9 +7,9 @@ import {
   ActivityIndicator,
   Button,
 } from "react-native";
-import * as Location from "expo-location";
+import { useQuery } from "@tanstack/react-query";
 import { Fontisto } from "@expo/vector-icons";
-import { API_KEY } from "@env";
+import { FetchWeathers } from "../api";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const icons = {
@@ -25,33 +23,10 @@ const icons = {
 };
 
 export default function HomeScreen({ navigation }) {
-  const [city, setCity] = useState("Loading...");
-  const [days, setDays] = useState([]);
-  const [ok, setOk] = useState(true);
   const [today, setToday] = useState("");
-  const [datas, setDatas] = useState({});
-
-  const getWeather = async () => {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
-    if (!granted) {
-      setOk(false);
-    }
-    const {
-      coords: { latitude, longitude },
-    } = await Location.getCurrentPositionAsync();
-    const location = await Location.reverseGeocodeAsync(
-      { latitude, longitude },
-      { useGoogleMaps: false }
-    );
-    setCity(location[0].city);
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts&appid=${API_KEY}&units=metric`
-    );
-
-    const json = await response.json();
-    setDays(json.daily);
-    setDatas(json);
-  };
+  const { data, isLoading, isError } = useQuery(["weathers"], () =>
+    FetchWeathers()
+  );
 
   const formatDate = () => {
     const date = new Date();
@@ -67,99 +42,91 @@ export default function HomeScreen({ navigation }) {
   };
 
   useEffect(() => {
-    getWeather();
     formatDate();
   }, []);
+
+  let state = "ok";
+  if (isLoading) state = "loading";
+  if (isError) state = "error";
+
   return (
     <View style={styles.container}>
-      <View style={styles.topWrapper}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={[styles.fs30, styles.fw600]}>{city}</Text>
-          <Button
-            // color="#ff7675"
-            title=">>"
-            onPress={() => navigation.navigate("Detail", { laguage: "french" })}
-          />
+      {state === "error" && <Text>"error!"</Text>}
+      {state === "loading" && (
+        <View style={styles.loading}>
+          <ActivityIndicator color={"black"} size="large" />
         </View>
-        <Text style={styles.fs15}>{today}</Text>
-      </View>
-      <View style={styles.hrline} />
-
-      <ScrollView
-        pagingEnabled
-        contentContainerStyle={styles.fs30}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        {days.length === 0 ? (
-          <View style={{ ...styles.middle, alignItems: "center" }}>
-            <ActivityIndicator color={"black"} size="large" />
+      )}
+      {state === "ok" && data && (
+        <>
+          <View style={styles.topWrapper}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text style={[styles.fs30, styles.fw600]}>{data.city}</Text>
+              <Button
+                // color="#ff7675"
+                title=">>"
+                onPress={() =>
+                  navigation.navigate("Detail", { laguage: "french" })
+                }
+              />
+            </View>
+            <Text style={styles.fs15}>{today}</Text>
           </View>
-        ) : (
-          days.map((day, index) => (
-            <View key={index}>
-              <View style={styles.middle}>
-                <View style={styles.tempWrapper}>
-                  <Fontisto
-                    name={icons[day.weather[0].main][0]}
-                    size={25}
-                    color="black"
-                    paddingRight="5%"
-                  />
-                  <Text style={styles.fs20}>
-                    {icons[day.weather[0].main][1]}
-                  </Text>
-                </View>
-                <Text style={styles.fs100}>
-                  {parseFloat(datas?.current?.temp).toFixed(1)}°
+          <View style={styles.hrline} />
+
+          <View>
+            <View style={styles.middle}>
+              <View style={styles.tempWrapper}>
+                <Fontisto
+                  name={icons[data.current.weather[0].main][0]}
+                  size={25}
+                  color="black"
+                  paddingRight="5%"
+                />
+                <Text style={styles.fs20}>
+                  {icons[data.current.weather[0].main][1]}
                 </Text>
               </View>
-              <View style={styles.hrline} />
+              <Text style={styles.fs100}>
+                {parseFloat(data?.current?.temp).toFixed(1)}°
+              </Text>
+            </View>
+            <View style={styles.hrline} />
 
-              <View>
-                {!datas ? (
-                  <View style={{ ...styles.middle, alignItems: "center" }}>
-                    <ActivityIndicator color={"black"} size="large" />
-                  </View>
-                ) : (
-                  <>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <View>
-                        <Text style={[styles.fs15, styles.fw600]}>
-                          습도 {datas?.current?.humidity}%
-                        </Text>
-                        <Text style={styles.fs15}>
-                          체감온도{" "}
-                          {parseFloat(datas?.current?.feels_like).toFixed(1)}°
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={[styles.fs15, styles.fw600]}>
-                          바람 {datas?.current?.wind_speed}m/s
-                        </Text>
-                        <Text style={styles.fs15}>
-                          {day.weather[0].description}
-                        </Text>
-                      </View>
-                    </View>
-                  </>
-                )}
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View>
+                  <Text style={[styles.fs15, styles.fw600]}>
+                    습도 {data?.current?.humidity}%
+                  </Text>
+                  <Text style={styles.fs15}>
+                    체감온도 {parseFloat(data?.current?.feels_like).toFixed(1)}°
+                  </Text>
+                </View>
+                <View>
+                  <Text style={[styles.fs15, styles.fw600]}>
+                    바람 {data?.current?.wind_speed}m/s
+                  </Text>
+                  <Text style={styles.fs15}>
+                    {data.current.weather[0].description}
+                  </Text>
+                </View>
               </View>
             </View>
-          ))
-        )}
-      </ScrollView>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -170,8 +137,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#dcdcdc",
     padding: 30,
   },
+  loading: {
+    width: SCREEN_WIDTH - 60,
+    height: "100%",
+    alignContent: "center",
+    justifyContent: "center",
+  },
   topWrapper: {
-    flex: 1,
+    flex: 0.5,
     justifyContent: "flex-end",
     alignItems: "left",
   },

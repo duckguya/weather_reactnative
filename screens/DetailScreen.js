@@ -1,4 +1,3 @@
-// import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
@@ -8,8 +7,6 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import * as Location from "expo-location";
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { Fontisto } from "@expo/vector-icons";
 import { FetchWeathers } from "../api";
@@ -25,29 +22,11 @@ const icons = {
 };
 
 export default function DetailScreen({ navigation }) {
-  const [ok, setOk] = useState(true);
   const [today, setToday] = useState("");
 
   const { data, isLoading, isError } = useQuery(["weathers"], () =>
     FetchWeathers()
   );
-  const getWeather = async () => {
-    try {
-      const { granted } = await Location.requestForegroundPermissionsAsync();
-      if (!granted) {
-        setOk(false);
-      }
-      const {
-        coords: { latitude, longitude },
-      } = await Location.getCurrentPositionAsync();
-      const location = await Location.reverseGeocodeAsync(
-        { latitude, longitude },
-        { useGoogleMaps: false }
-      );
-    } catch (error) {
-      console.log("error: ", error);
-    }
-  };
 
   const formatDate = () => {
     const date = new Date();
@@ -63,19 +42,18 @@ export default function DetailScreen({ navigation }) {
   };
 
   useEffect(() => {
-    getWeather();
     formatDate();
   }, []);
 
   let state = "ok";
   if (isLoading) state = "loading";
   if (isError) state = "error";
-  console.log(state);
+
   return (
     <View style={styles.container}>
       {state === "error" && <Text>"error!"</Text>}
       {state === "loading" && (
-        <View style={{ ...styles.middle, alignItems: "center" }}>
+        <View style={styles.loading}>
           <ActivityIndicator color={"black"} size="large" />
         </View>
       )}
@@ -198,6 +176,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#dcdcdc",
     padding: 30,
+  },
+  loading: {
+    width: SCREEN_WIDTH - 60,
+    height: "100%",
+    alignContent: "center",
+    justifyContent: "center",
   },
   topWrapper: {
     flex: 1,
