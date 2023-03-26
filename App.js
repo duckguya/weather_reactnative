@@ -4,6 +4,7 @@ import HomeScreen from "./screens/HomeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import DetailScreen from "./screens/DetailScreen";
+import { StatusBar } from "expo-status-bar";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
           <Stack.Screen name="Detail" component={DetailScreen} />
         </Stack.Navigator>
       </NavigationContainer>
+      <StatusBar style="auto" />
     </>
   );
 }

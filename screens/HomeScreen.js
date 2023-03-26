@@ -66,21 +66,9 @@ export default function HomeScreen({ navigation }) {
     setToday(today);
   };
 
-  // const mphToMetersPerSecond = async () => {
-  //   if (datas) {
-  //     const kmPerHour = datas.current.wind_speed * 1.60934;
-  //     const metersPerSecond = kmPerHour / 3.6;
-
-  //     let newDatas = { ...datas };
-  //     newDatas.current.wind_speed = Number(metersPerSecond.toFixed(2));
-  //     setDatas({ ...datas, newDatas });
-  //   }
-  // };
-
   useEffect(() => {
     getWeather();
     formatDate();
-    // mphToMetersPerSecond();
   }, []);
   return (
     <View style={styles.container}>
@@ -94,7 +82,7 @@ export default function HomeScreen({ navigation }) {
         >
           <Text style={[styles.fs30, styles.fw600]}>{city}</Text>
           <Button
-            color="#ff7675"
+            // color="#ff7675"
             title=">>"
             onPress={() => navigation.navigate("Detail", { laguage: "french" })}
           />
