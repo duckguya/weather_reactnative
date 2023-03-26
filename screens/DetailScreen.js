@@ -9,8 +9,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as Location from "expo-location";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import { Fontisto } from "@expo/vector-icons";
-import { API_KEY } from "@env";
+import { FetchWeathers } from "../api";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const icons = {
   Clouds: ["cloudy", "흐림"],
@@ -23,47 +25,28 @@ const icons = {
 };
 
 export default function DetailScreen({ navigation }) {
-  const [city, setCity] = useState("Loading...");
-  const [days, setDays] = useState([]);
   const [ok, setOk] = useState(true);
   const [today, setToday] = useState("");
-  const [data, setData] = useState({});
 
+  const { data, isLoading, isError } = useQuery(["weathers"], () =>
+    FetchWeathers()
+  );
   const getWeather = async () => {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
-    if (!granted) {
-      setOk(false);
+    try {
+      const { granted } = await Location.requestForegroundPermissionsAsync();
+      if (!granted) {
+        setOk(false);
+      }
+      const {
+        coords: { latitude, longitude },
+      } = await Location.getCurrentPositionAsync();
+      const location = await Location.reverseGeocodeAsync(
+        { latitude, longitude },
+        { useGoogleMaps: false }
+      );
+    } catch (error) {
+      console.log("error: ", error);
     }
-    const {
-      coords: { latitude, longitude },
-    } = await Location.getCurrentPositionAsync();
-    const location = await Location.reverseGeocodeAsync(
-      { latitude, longitude },
-      { useGoogleMaps: false }
-    );
-    setCity(location[0].city);
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts&appid=${API_KEY}&units=metric`
-    );
-
-    const json = await response.json();
-    let newJson = { ...json };
-    newJson.daily.map((d) => {
-      const date = new Date(d.dt * 1000);
-      const hours = date.getHours();
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const timeString = `${hours}:${minutes}`;
-      d.dt = timeString;
-    });
-    newJson.hourly.map((d) => {
-      const date = new Date(d.dt * 1000);
-      const hours = date.getHours();
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const timeString = `${hours}:${minutes}`;
-      d.dt = timeString;
-    });
-
-    setData(json);
   };
 
   const formatDate = () => {
@@ -83,20 +66,27 @@ export default function DetailScreen({ navigation }) {
     getWeather();
     formatDate();
   }, []);
+
+  let state = "ok";
+  if (isLoading) state = "loading";
+  if (isError) state = "error";
+  console.log(state);
   return (
     <View style={styles.container}>
-      {Object.keys(data).length === 0 ? (
+      {state === "error" && <Text>"error!"</Text>}
+      {state === "loading" && (
         <View style={{ ...styles.middle, alignItems: "center" }}>
           <ActivityIndicator color={"black"} size="large" />
         </View>
-      ) : (
+      )}
+      {state === "ok" && data && (
         <ScrollView
           pagingEnabled
           contentContainerStyle={styles.fs30}
           showsHorizontalScrollIndicator={false}
         >
           <View style={styles.topWrapper}>
-            <Text style={[styles.fs30, styles.fw600]}>{city}</Text>
+            <Text style={[styles.fs30, styles.fw600]}>{data.city}</Text>
             <Text style={styles.fs15}>{today}</Text>
           </View>
           <View style={styles.hrline} />
