@@ -112,16 +112,16 @@ export default function DetailScreen({ navigation }) {
           </View>
           <View style={styles.hrline} />
 
-          <ScrollView
-            pagingEnabled
-            contentContainerStyle={styles.fs30}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
-            <View style={{ paddingBottom: 30 }}>
-              <View style={{ paddingBottom: 10 }}>
-                <Text style={[styles.fs15, styles.fw600]}>Hourly</Text>
-              </View>
+          <View style={{ paddingBottom: 30 }}>
+            <View style={{ paddingBottom: 10 }}>
+              <Text style={[styles.fs15, styles.fw600]}>Hourly</Text>
+            </View>
+            <ScrollView
+              pagingEnabled
+              contentContainerStyle={styles.fs30}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
               <View style={{ flexDirection: "row" }}>
                 {data?.hourly.map((hour, index) => (
                   <View style={styles.daily} key={index}>
@@ -137,18 +137,18 @@ export default function DetailScreen({ navigation }) {
                   </View>
                 ))}
               </View>
+            </ScrollView>
+          </View>
+          <View>
+            <View style={{ paddingBottom: 10 }}>
+              <Text style={[styles.fs15, styles.fw600]}>Daily</Text>
             </View>
-          </ScrollView>
-          <ScrollView
-            pagingEnabled
-            contentContainerStyle={styles.fs30}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
-            <View>
-              <View style={{ paddingBottom: 10 }}>
-                <Text style={[styles.fs15, styles.fw600]}>Daily</Text>
-              </View>
+            <ScrollView
+              pagingEnabled
+              contentContainerStyle={styles.fs30}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
               <View style={{ flexDirection: "row" }}>
                 {data?.daily.map((day, index) => (
                   <View style={styles.daily} key={index}>
@@ -163,8 +163,8 @@ export default function DetailScreen({ navigation }) {
                   </View>
                 ))}
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </View>
         </ScrollView>
       )}
     </View>
@@ -174,7 +174,7 @@ export default function DetailScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#dcdcdc",
+    backgroundColor: "white",
     padding: 30,
   },
   loading: {
