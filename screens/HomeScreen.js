@@ -6,10 +6,12 @@ import {
   View,
   ActivityIndicator,
   Button,
+  TouchableOpacity,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Fontisto } from "@expo/vector-icons";
 import { FetchWeathers } from "../api";
+import { StatusBar } from "expo-status-bar";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const icons = {
@@ -51,6 +53,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       {state === "error" && <Text>"error!"</Text>}
       {state === "loading" && (
         <View style={styles.loading}>
@@ -67,14 +70,28 @@ export default function HomeScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <Text style={[styles.fs30, styles.fw600]}>{data.city}</Text>
-              <Button
-                // color="#ff7675"
-                title=">>"
+              <TouchableOpacity
                 onPress={() =>
                   navigation.navigate("Detail", { laguage: "french" })
                 }
-              />
+              >
+                <Text
+                  style={[
+                    styles.fs30,
+                    styles.fw600,
+                    {
+                      color: "#0065cc",
+                      shadowColor: "#2f3542",
+                      shadowOffset: { width: 0, height: 5 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      // textDecorationLine: "underline",
+                    },
+                  ]}
+                >
+                  {data.city}
+                </Text>
+              </TouchableOpacity>
             </View>
             <Text style={styles.fs15}>{today}</Text>
           </View>
